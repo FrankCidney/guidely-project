@@ -1,0 +1,21 @@
+# Python / Virtual Environment
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Environment Keys
+.env
+
+# Database & Vector Indices
+backend/data/store/*
+!backend/data/store/.gitkeep
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
