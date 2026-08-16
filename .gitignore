@@ -19,3 +19,6 @@ frontend/dist/
 .DS_Store
 .vscode/
 .idea/
+
+# Execution Plan
+PROJECT_EXECUTION_PLAN.md

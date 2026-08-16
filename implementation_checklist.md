@@ -23,35 +23,36 @@
 
 ### Phase 2: Database Schema & Data Models
 
-* [ ] Implement `backend/database.py` with SQLite connection initialization
+* [x] Implement `backend/database.py` with SQLite connection initialization
 
 
-* [ ] Create SQLite schema tables in `database.py`:
-* [ ] `users` (id, email, hashed_password, role, created_at)
+* [x] Create SQLite schema tables in `database.py`:
+* [x] `users` (id, email, hashed_password, role, created_at)
 
 
-* [ ] `documents` (id, file_name, file_type, file_hash, category, uploaded_by, created_at)
+* [x] `documents` (id, file_name, file_type, file_hash, category, uploaded_by, created_at)
 
 
-* [ ] `document_chunks` (id, document_id, vector_id, chunk_index, content)
+* [x] `document_chunks` (id, document_id, vector_id, chunk_index, content)
 
 
-* [ ] `query_logs` (id, user_id, query_text, answer_text, sources_json, latency_ms, cache_hit, timestamp)
+* [x] `query_logs` (id, user_id, query_text, answer_text, sources_json, latency_ms, cache_hit, timestamp)
 
 
 
 
-* [ ] Build Pydantic schemas in `backend/models/`:
-* [ ] `auth.py` (UserRegister, UserLogin, TokenResponse, UserOut)
+* [x] Build Pydantic schemas in `backend/models/`:
+* [x] `auth.py` (UserRegister, UserLogin, TokenResponse, UserOut)
 
 
-* [ ] `document.py` (DocumentResponse, DocumentCategoryUpdate)
+* [x] `document.py` (DocumentResponse, DocumentCategoryUpdate)
 
 
-* [ ] `search.py` (SearchQuery, SearchResponse, SourceCitation)
+* [x] `search.py` (SearchQuery, SearchResponse, SourceCitation)
 
 
-* [ ] `metrics.py` (HealthResponse, SystemMetrics)
+* [x] `metrics.py` (HealthResponse, SystemMetrics)
+
 
 
 
