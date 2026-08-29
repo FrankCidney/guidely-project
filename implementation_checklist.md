@@ -110,7 +110,7 @@
 * [ ] Build API Controllers in `backend/routes/`:
 * [x] `routes/auth.py`: `POST /api/auth/register`, `POST /api/auth/login`
 
-* [ ] `routes/documents.py`: `POST /api/documents` (with SHA-256 cache-hit skip), `GET /api/documents`, `DELETE /api/documents/{id}`
+* [x] `routes/documents.py`: `POST /api/documents` (with SHA-256 cache-hit skip), `GET /api/documents`, `DELETE /api/documents/{id}`
 
 * [ ] `routes/search.py`: `POST /api/search` (vector query, LLM execution, telemetry logging)
 
