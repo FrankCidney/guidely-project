@@ -112,10 +112,8 @@
 
 * [x] `routes/documents.py`: `POST /api/documents` (with SHA-256 cache-hit skip), `GET /api/documents`, `DELETE /api/documents/{id}`
 
-* [ ] `routes/search.py`: `POST /api/search` (vector query, LLM execution, telemetry logging)
-
-
-* [ ] `routes/system.py`: `GET /health`, `GET /metrics`, `GET /metrics/export`
+* [x] `routes/search.py`: `POST /api/search` (vector query, LLM execution, telemetry logging)
+* [x] `routes/system.py`: `GET /health`, `GET /metrics`, `GET /metrics/export`
 
 
 
