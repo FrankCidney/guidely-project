@@ -108,7 +108,7 @@
 ### Phase 4: Backend API Routes & FastAPI Entry
 
 * [ ] Build API Controllers in `backend/routes/`:
-* [ ] `routes/auth.py`: `POST /api/auth/register`, `POST /api/auth/login`
+* [x] `routes/auth.py`: `POST /api/auth/register`, `POST /api/auth/login`
 
 * [ ] `routes/documents.py`: `POST /api/documents` (with SHA-256 cache-hit skip), `GET /api/documents`, `DELETE /api/documents/{id}`
 
