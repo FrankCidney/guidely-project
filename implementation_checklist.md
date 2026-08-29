@@ -95,11 +95,9 @@
 
 
 
-* [ ] `services/metrics_service.py`:
-* [ ] Metric calculation logic (median latency, p95 latency, cache hit rates)
-
-
-* [ ] Query log writer and CSV export stream generator
+* [x] `services/metrics_service.py`:
+* [x] Metric calculation logic (median latency, p95 latency, cache hit rates)
+* [x] Query log writer and CSV export stream generator
 
 
 
