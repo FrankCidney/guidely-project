@@ -117,14 +117,10 @@
 
 
 
-* [ ] Implement `backend/main.py`:
-* [ ] CORS middleware setup
-
-
-* [ ] Application startup event to initialize database tables and auto-seed admin user (`SEED_ADMIN_EMAIL`)
-
-
-* [ ] Global exception handlers for standard `4xx`/`5xx` error JSON responses
+* [x] Implement `backend/main.py`:
+* [x] CORS middleware setup
+* [x] Application startup event to initialize database tables and auto-seed admin user (`SEED_ADMIN_EMAIL`)
+* [x] Global exception handlers for standard `4xx`/`5xx` error JSON responses
 
 
 
