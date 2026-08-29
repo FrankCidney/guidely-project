@@ -130,37 +130,17 @@
 
 ### Phase 5: Frontend React Implementation
 
-* [ ] Setup Axios API client (`src/api/client.js`) with automatic JWT Bearer header interceptor
-
-
-* [ ] Build shared UI Components:
-* [ ] `Navbar.jsx` (Navigation bar showing user role badge & logout button)
-
-
-* [ ] `ProtectedRoute.jsx` (Route guard enforcing authentication and role limits)
-
-
-* [ ] `SourceCard.jsx` (Component displaying cited source files, snippets, and match confidence)
-
-
-* [ ] `MetricsBadge.jsx` (Query response latency and cache state display)
-
-
-
-
-* [ ] Build Views & Pages:
-* [ ] `LoginPage.jsx` (User authentication and signup interface)
-
-
-* [ ] `SearchPage.jsx` (Q&A interface, conversation history, category filters, and source citations)
-
-
-* [ ] `AdminPage.jsx` (Document uploader, category assignment, re-indexing trigger, and CSV telemetry export)
-
-
-
-
-* [ ] Wire client-side routing in `App.jsx` and styling in `App.module.css`
+* [x] Setup Axios API client (`src/api/client.js`) with automatic JWT Bearer header interceptor
+* [x] Build shared UI Components:
+* [x] `Navbar.jsx` (Navigation bar showing user role badge & logout button)
+* [x] `ProtectedRoute.jsx` (Route guard enforcing authentication and role limits)
+* [x] `SourceCard.jsx` (Component displaying cited source files, snippets, and match confidence)
+* [x] `MetricsBadge.jsx` (Query response latency and cache state display)
+* [x] Build Views & Pages:
+* [x] `LoginPage.jsx` (User authentication and signup interface)
+* [x] `SearchPage.jsx` (Q&A interface, conversation history, category filters, and source citations)
+* [x] `AdminPage.jsx` (Document uploader, category assignment, re-indexing trigger, and CSV telemetry export)
+* [x] Wire client-side routing in `App.jsx` and styling in `App.css` and `index.css`
 
 
 ---
