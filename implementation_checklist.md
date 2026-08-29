@@ -62,36 +62,35 @@
 
 ### Phase 3: Core Business Services
 
-* [ ] `services/auth_service.py`: Password hashing (bcrypt) and JWT generation/verification
+* [x] `services/auth_service.py`: Password hashing (bcrypt) and JWT generation/verification
 
 
-* [ ] `services/document_parser.py`:
-* [ ] SHA-256 hash calculator for document content
+* [x] `services/document_parser.py`:
+* [x] SHA-256 hash calculator for document content
 
 
-* [ ] Text extraction handlers for `.txt`, `.md`, `.pdf` (`pypdf`), and `.docx` (`python-docx`)
+* [x] Text extraction handlers for `.txt`, `.md`, `.pdf` (`pypdf`), and `.docx` (`python-docx`)
 
 
-* [ ] Token-based chunking logic (~500 tokens per chunk with 50-token overlap)
-
-
-
-
-* [ ] `services/vector_store.py`:
-* [ ] FAISS index manager (`IndexFlatIP` for 768-dimensional normalized vectors)
-
-
-* [ ] Methods to add vectors, persist to `faiss_index.bin`, query top-k, and rebuild index
+* [x] Token-based chunking logic (~500 tokens per chunk with 50-token overlap)
 
 
 
 
-* [ ] `services/llm_service.py`:
-* [ ] Google Gemini API wrapper (`google-genai`) using `text-embedding-004`
+* [x] `services/vector_store.py`:
+* [x] FAISS index manager (`IndexFlatIP` for 768-dimensional normalized vectors)
 
-* [ ] Conversational query reformulation for follow-up questions using `gemini-1.5-flash`
 
-* [ ] Context-augmented Q&A answer generation with strict citation constraints
+* [x] Methods to add vectors, persist to `faiss_index.bin`, query top-k, and rebuild index
+
+
+
+
+
+* [x] `services/llm_service.py`:
+* [x] Google Gemini API wrapper (`google-genai`) using `text-embedding-004`
+* [x] Conversational query reformulation for follow-up questions using `gemini-1.5-flash`
+* [x] Context-augmented Q&A answer generation with strict citation constraints
 
 
 
