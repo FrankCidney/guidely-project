@@ -1,0 +1,115 @@
+================================================================================
+NOVA DIGITAL — IT OPERATIONS & ENGINEERING INCIDENT RESPONSE RUNBOOK
+Document Identifier: OPS-RUN-2026-REV4
+Target Audience: Tier 2/3 Support Engineers, SRE, DevOps, Backend Engineers
+Last Updated: January 15, 2026
+Classification: Internal Confidential
+================================================================================
+
+1. INCIDENT MANAGEMENT OVERVIEW & OBJECTIVES
+--------------------------------------------------------------------------------
+This runbook defines the operational protocol for identifying, triaging, mitigating, 
+and reviewing technical incidents across Nova Digital cloud services, databases, 
+APIs, and internal platforms. Our primary objective is maintaining a 99.95% system 
+uptime SLA while safeguarding data integrity and customer trust.
+
+Every technical employee participates in a blameless culture focused on rapid system 
+restoration and systematic root-cause mitigation.
+
+
+2. SEVERITY LEVEL DEFINITIONS & TARGET RESPONSE SLAS
+--------------------------------------------------------------------------------
+Incidents are categorized into four severity tiers based on business impact, customer 
+reach, and operational degradation:
+
+[P1 - CRITICAL OUTAGE]
+• Definition: Complete production downtime, total API outage, critical security breach, 
+  or data corruption affecting >25% of active users. Core payment/auth flows down.
+• PagerDuty Response Target: First acknowledgment within 5 MINUTES.
+• Resolution / Mitigation SLA: < 1 Hour.
+• Communication Cadence: Status page and executive briefing every 15 minutes.
+
+[P2 - MAJOR DEGRADATION]
+• Definition: High latency (p99 > 3000ms), partial core service failure, background job 
+  pipeline stalled, or major feature inaccessible for 5% to 25% of users.
+• PagerDuty Response Target: First acknowledgment within 15 MINUTES.
+• Resolution / Mitigation SLA: < 4 Hours.
+• Communication Cadence: Internal Slack updates every 30 minutes.
+
+[P3 - MINOR SERVICE ISSUE]
+• Definition: Non-critical feature broken (e.g., PDF export failure, analytics dashboard lag), 
+  workaround available, affecting <5% of active users with no data loss.
+• PagerDuty Response Target: Acknowledgment within 60 MINUTES (during business hours).
+• Resolution / Mitigation SLA: Within 2 business days or next scheduled sprint release.
+
+[P4 - COSMETIC / LOW PRIORITY]
+• Definition: Minor UI visual glitches, spelling errors, non-blocking internal tooling bugs.
+• PagerDuty Response Target: No on-call page; triaged via standard Jira backlog.
+• Resolution / Mitigation SLA: Next regular sprint cycle.
+
+
+3. INCIDENT COMMAND ROLES & RESPONSIBILITIES
+--------------------------------------------------------------------------------
+During any P1 or P2 incident, the following roles must be explicitly declared in the 
+incident Slack room:
+
+1. Incident Commander (IC):
+   - Assumed by the Primary On-Call Engineer until explicitly handed off.
+   - Holds full operational authority. Directs investigation streams, assigns tasks, 
+     and prevents duplicate troubleshooting efforts. Does NOT write code or fix bugs directly.
+
+2. Technical Lead (TL):
+   - Senior domain specialist or on-call secondary engineer.
+   - Diagnoses root causes, reviews error logs in Datadog/Grafana, executes rollbacks, 
+     or tests emergency hotfix pull requests.
+
+3. Communications Lead (Comms):
+   - Support Engineering Lead or Product Manager.
+   - Updates the public Statuspage (status.novadigital.internal), drafts merchant-facing 
+     bulletins, and briefs internal customer support teams.
+
+
+4. ON-CALL ROTATION, COMPENSATION & ESCALATION LADDERS
+--------------------------------------------------------------------------------
+• Rotation Schedule: Rotations run on a weekly cycle beginning Mondays at 09:00 UTC 
+  and concluding the following Monday at 09:00 UTC.
+• On-Call Stipend: Engineers on standby receive a fixed $350 USD weekly standby stipend. 
+  Active off-hours incident response hours are compensated at $75 USD/hour (minimum 
+  1-hour block per page).
+• Escalation Ladder:
+  1. Primary On-Call paged via PagerDuty (Phone Call + Push Notification).
+  2. If unacknowledged at 10 minutes: Automated secondary page dispatched to Secondary On-Call.
+  3. If unacknowledged at 20 minutes: Automated escalation to Engineering Director & VP Ops.
+
+
+5. STEP-BY-STEP INCIDENT RESPONSE PROTOCOL
+--------------------------------------------------------------------------------
+Step 1: Acknowledge the PagerDuty alert immediately within your mobile app or CLI.
+Step 2: Initialize the dedicated Slack channel by executing:
+        `/incident declare <title> <severity>` in Slack.
+Step 3: Open the persistent Google Meet incident bridge posted automatically by the bot.
+Step 4: Assess recent deployments in GitHub and ArgoCD within the last 2 hours. If a 
+        recent release correlates with error spikes, execute an immediate rollback:
+        `argocd app rollback <service-name> --to-revision <last-known-good-commit>`
+Step 5: Inspect Datadog APM traces and query PostgreSQL slow logs for locking bottlenecks.
+Step 6: Update internal status in `#incident-active` and customer status on Statuspage.
+Step 7: Once telemetry stabilizes for 15 consecutive minutes, mark the incident as 
+        RESOLVED in PagerDuty and announce mitigation in Slack.
+
+
+6. BLAMELESS POST-MORTEM & ROOT CAUSE ANALYSIS (RCA)
+--------------------------------------------------------------------------------
+• Mandatory Post-Mortem Threshold: Required for ALL P1 incidents and any P2 lasting >2 hours.
+• Submission Window: The IC must publish an initial blameless RCA draft within 48 HOURS 
+  of incident resolution into the Notion Engineering Knowledge Base.
+• Structure:
+  - Incident Summary & Total Customer Impact Time (MTTD / MTTR).
+  - Chronological Timeline of events and actions.
+  - Root Cause Analysis utilizing the "5 Whys" methodology.
+  - Corrective Action Items assigned to designated owners with strict Jira sprint tickets.
+• Review Session: The blameless post-mortem is presented during the bi-weekly Engineering 
+  Retrospective on Thursday at 14:00 EST.
+
+================================================================================
+END OF RUNBOOK • NOVA DIGITAL RELIABILITY ENGINEERING TEAM
+================================================================================

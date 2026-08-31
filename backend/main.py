@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
 # Initialize FastAPI application
 app = FastAPI(
     title="Guidely API",
-    description="Production-Grade Internal Knowledge Q&A Assistant (RAG Pipeline)",
+    description="Internal Knowledge Q&A Assistant (RAG Pipeline)",
     version="1.0.0",
     lifespan=lifespan
 )
