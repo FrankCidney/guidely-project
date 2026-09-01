@@ -134,6 +134,11 @@ export const systemService = {
     return response.data;
   },
 
+  async getRecentQueries(limit = 15) {
+    const response = await api.get(`/api/metrics/recent?limit=${limit}`);
+    return response.data;
+  },
+
   async exportMetricsCsv() {
     const token = localStorage.getItem('guidely_token');
     const response = await api.get('/api/metrics/export', {

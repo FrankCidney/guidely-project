@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 from backend.models.metrics import HealthResponse, SystemMetrics
 from backend.routes.auth import require_admin
 from backend.routes.documents import get_vector_store
-from backend.services.metrics_service import get_system_metrics, generate_query_logs_csv
+from backend.services.metrics_service import get_system_metrics, generate_query_logs_csv, get_recent_query_logs
 from backend.database import get_db
 
 router = APIRouter(tags=["System"])
@@ -44,6 +44,15 @@ def system_metrics():
     """
     metrics_data = get_system_metrics()
     return SystemMetrics(**metrics_data)
+
+
+@router.get("/metrics/recent")
+@router.get("/api/metrics/recent")
+def recent_query_metrics(limit: int = 15):
+    """
+    Returns recent auto-logged query telemetry entries (id, query, latency, cache_hit, timestamp).
+    """
+    return get_recent_query_logs(limit=limit)
 
 
 @router.get("/metrics/export")

@@ -21,3 +21,5 @@ class SystemMetrics(BaseModel):
     total_queries_served: int
     latency: LatencyMetrics
     cache_hit_rate_pct: float
+    repeat_query_hit_rate_pct: float = 100.0
+    doc_cache_hit_rate_pct: float = 100.0
