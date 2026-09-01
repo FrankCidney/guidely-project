@@ -1,11 +1,36 @@
 import os
 import json
 import hashlib
+import re
 from typing import List, Dict, Any, Optional, Union, Tuple
 from google import genai
 from google.genai import types
 from backend.config import GEMINI_API_KEY, GEMINI_LLM_MODEL, GEMINI_EMBEDDING_MODEL
 from backend.database import get_db
+
+
+def clean_plain_text(text: str) -> str:
+    """
+    Strips residual markdown formatting symbols from LLM response
+    so the answer displays as clean, readable plain text.
+    """
+    if not text:
+        return ""
+    # Strip code block formatting
+    cleaned = re.sub(r'```[a-zA-Z]*\n?', '', text)
+    cleaned = re.sub(r'```', '', cleaned)
+    # Strip bold / italic markers
+    cleaned = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned)
+    cleaned = re.sub(r'__(.*?)__', r'\1', cleaned)
+    cleaned = re.sub(r'\*(.*?)\*', r'\1', cleaned)
+    cleaned = re.sub(r'_(.*?)_', r'\1', cleaned)
+    # Strip markdown headers (e.g. ### Header)
+    cleaned = re.sub(r'^\s*#{1,6}\s+', '', cleaned, flags=re.MULTILINE)
+    # Strip inline backticks
+    cleaned = re.sub(r'`(.*?)`', r'\1', cleaned)
+    # Convert list markers (* item or - item) into clean bullets
+    cleaned = re.sub(r'^\s*[\*\-]\s+', '• ', cleaned, flags=re.MULTILINE)
+    return cleaned.strip()
 
 
 class GeminiService:
@@ -201,7 +226,9 @@ class GeminiService:
             "Answer the user's question clearly and concisely using ONLY the provided document snippets below. "
             "If the answer cannot be found in the snippets, explicitly state: "
             "'I could not find the answer in the available documentation.' "
-            "Always include source file references in your answer when stating facts."
+            "Always include source file references in your answer when stating facts. "
+            "Provide your answer in clean, readable plain text paragraphs. "
+            "Do NOT use markdown formatting such as asterisks (** or *), hash headers (###), backticks, or raw bullet asterisks."
         )
 
         full_prompt = f"Context:\n{context_str}\n\nUser Question: {query}"
@@ -215,4 +242,4 @@ class GeminiService:
             )
         )
 
-        return response.text.strip()
+        return clean_plain_text(response.text.strip())
