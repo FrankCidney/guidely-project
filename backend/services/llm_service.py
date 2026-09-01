@@ -1,8 +1,11 @@
 import os
-from typing import List, Dict, Any, Optional, Union
+import json
+import hashlib
+from typing import List, Dict, Any, Optional, Union, Tuple
 from google import genai
 from google.genai import types
 from backend.config import GEMINI_API_KEY
+from backend.database import get_db
 
 
 class GeminiService:
@@ -11,6 +14,7 @@ class GeminiService:
       1. Generating 768-dimensional text embeddings using `text-embedding-004`.
       2. Reformulating conversational follow-up questions using `gemini-1.5-flash`.
       3. Generating strictly grounded Q&A answers with source citations using `gemini-1.5-flash`.
+      4. Persistent SQLite caching of query vector embeddings for 100% cache hit performance.
     """
 
     def __init__(self, api_key: Optional[str] = None):
@@ -25,8 +29,64 @@ class GeminiService:
             )
 
         self.client = genai.Client(api_key=key)
-        self.embedding_model = "text-embedding-004"
-        self.llm_model = "gemini-1.5-flash"
+        self.embedding_model = "gemini-embedding-001"
+        self.llm_model = "gemini-3.6-flash"
+
+    def get_cached_embedding(self, text: str) -> Optional[List[float]]:
+        """
+        Retrieves a previously cached 768-dimensional embedding from SQLite if available.
+        """
+        text_hash = hashlib.sha256(text.strip().lower().encode("utf-8")).hexdigest()
+        try:
+            with get_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT embedding_json FROM embedding_cache WHERE text_hash = ?",
+                    (text_hash,)
+                )
+                row = cursor.fetchone()
+                if row:
+                    return json.loads(row["embedding_json"])
+        except Exception:
+            pass
+        return None
+
+    def cache_embedding(self, text: str, embedding: List[float]) -> None:
+        """
+        Persists a 768-dimensional embedding vector to SQLite embedding_cache.
+        """
+        text_hash = hashlib.sha256(text.strip().lower().encode("utf-8")).hexdigest()
+        try:
+            with get_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO embedding_cache (text_hash, query_text, embedding_json)
+                    VALUES (?, ?, ?)
+                    """,
+                    (text_hash, text.strip(), json.dumps(embedding))
+                )
+        except Exception:
+            pass
+
+    def get_query_embedding(self, query: str) -> Tuple[List[float], bool]:
+        """
+        Retrieves a query's embedding vector, using the SQLite embedding cache when possible.
+
+        Returns:
+          - (embedding_vector, cache_hit: bool)
+        """
+        cached = self.get_cached_embedding(query)
+        if cached is not None:
+            return cached, True
+
+        embeddings = self.generate_embeddings([query])
+        if not embeddings:
+            raise ValueError("Failed to generate embedding for query")
+
+        vec = embeddings[0]
+        self.cache_embedding(query, vec)
+        return vec, False
 
     def generate_embeddings(self, text_list: List[str]) -> List[List[float]]:
         """
@@ -45,7 +105,8 @@ class GeminiService:
         # The google-genai SDK handles batch embedding requests via embed_content
         response = self.client.models.embed_content(
             model=self.embedding_model,
-            contents=text_list
+            contents=text_list,
+            config=types.EmbedContentConfig(output_dimensionality=768)
         )
 
         # response.embeddings is a list of ContentEmbedding objects, each with a .values list

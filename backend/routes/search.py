@@ -41,14 +41,14 @@ def perform_search(
     else:
         standalone_query = raw_query
 
-    # 2. Query Embedding
-    query_embeddings = llm.generate_embeddings([standalone_query])
-    if not query_embeddings:
+    # 2. Query Embedding (with persistent SQLite caching)
+    try:
+        query_vector, cache_hit = llm.get_query_embedding(standalone_query)
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate query embedding"
+            detail=f"Failed to generate query embedding: {str(e)}"
         )
-    query_vector = query_embeddings[0]
 
     # 3. Vector Similarity Search (Top-k=3)
     # Search for more if category filter is active to ensure enough matches
@@ -117,7 +117,6 @@ def perform_search(
     # 6. Telemetry Logging & Performance Metrics
     end_time = time.perf_counter()
     latency_ms = max(1, int((end_time - start_time) * 1000))
-    cache_hit = False
 
     log_query(
         user_id=current_user.get("id"),

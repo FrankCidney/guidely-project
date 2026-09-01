@@ -110,6 +110,16 @@ def init_db():
         );
         """)
 
+        # 5. Embedding Cache Table (Query Vector Persistence)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS embedding_cache (
+            text_hash TEXT PRIMARY KEY,
+            query_text TEXT NOT NULL,
+            embedding_json TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """)
+
         print(f"Database initialized successfully at: {DB_PATH}")
 
 
