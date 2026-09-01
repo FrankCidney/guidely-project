@@ -211,3 +211,46 @@ def delete_document(
         vstore.rebuild([])
 
     return {"message": "Document deleted and index rebuilt"}
+
+
+@router.post("/reindex")
+def reindex_all_documents(
+    current_user: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Explicitly re-indexes all stored document chunks into the FAISS vector store.
+    Regenerates vector embeddings from all chunk contents and re-synchronizes vector IDs.
+    Requires Admin privileges.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, content FROM document_chunks ORDER BY id ASC")
+        chunks = cursor.fetchall()
+
+        cursor.execute("SELECT COUNT(*) FROM documents")
+        total_docs = cursor.fetchone()[0]
+
+    vstore = get_vector_store()
+    if chunks:
+        llm = get_llm_service()
+        chunk_texts = [r["content"] for r in chunks]
+        new_embeddings = llm.generate_embeddings(chunk_texts)
+        vstore.rebuild(new_embeddings)
+
+        with get_db() as conn:
+            cursor = conn.cursor()
+            for new_vec_id, r in enumerate(chunks):
+                cursor.execute(
+                    "UPDATE document_chunks SET vector_id = ? WHERE id = ?",
+                    (new_vec_id, r["id"])
+                )
+    else:
+        vstore.rebuild([])
+
+    return {
+        "message": "Re-indexing complete",
+        "documents_indexed": total_docs,
+        "chunks_indexed": len(chunks),
+        "total_vectors": vstore.total_vectors
+    }
+
