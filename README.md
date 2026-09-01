@@ -82,10 +82,12 @@ Create your `.env` file at the root of the repository:
 cp .env.example .env
 ```
 
-Ensure your `.env` file contains your Gemini API key:
+Ensure your `.env` file contains your Gemini API key and model choices:
 ```ini
-# Core AI Credentials
+# Core AI Credentials & Models
 GEMINI_API_KEY="AIzaSyYourActualGeminiKeyHere"
+GEMINI_LLM_MODEL="gemini-3.5-flash"
+GEMINI_EMBEDDING_MODEL="gemini-embedding-001"
 
 # Security & JWT Configuration
 JWT_SECRET="guidely-super-secret-production-key-change-this-32-chars"
@@ -103,13 +105,29 @@ FAISS_INDEX_PATH="backend/data/store/faiss_index.bin"
 
 ---
 
-### Step 2: Start the Backend (Terminal 1)
+### Step 2: Backend Setup & Startup (Terminal 1)
+
+#### Option A: Automated Non-Sudo Script (Recommended)
+If running on systems where `python3-venv` is missing and you lack `sudo` access (such as restricted work machines), run the automated non-sudo setup script:
 
 ```bash
-# 1. Activate virtual environment
+# 1. Make executable and run setup
+chmod +x setup_backend.sh
+./setup_backend.sh
+
+# 2. Activate virtual environment and start FastAPI
+source venv/bin/activate
+uvicorn backend.main:app --reload --port 8000
+```
+
+#### Option B: Manual Setup
+```bash
+# 1. Create and activate virtual environment
+python3 -m venv venv
 source venv/bin/activate
 
-# 2. Install dependencies (if not already installed)
+# 2. Install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 
 # 3. Start FastAPI server
