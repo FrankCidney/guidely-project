@@ -29,6 +29,8 @@ export default function AdminPage() {
 
   // General error/action states
   const [actionError, setActionError] = useState('');
+  const [reindexSuccess, setReindexSuccess] = useState('');
+  const [reindexing, setReindexing] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
@@ -114,6 +116,23 @@ export default function AdminPage() {
     }
   };
 
+  const handleReindex = async () => {
+    setReindexing(true);
+    setActionError('');
+    setReindexSuccess('');
+    try {
+      const res = await documentService.reindexDocuments();
+      setReindexSuccess(
+        `Successfully re-indexed ${res.documents_indexed} documents (${res.chunks_indexed} chunks in FAISS).`
+      );
+      loadAllData();
+    } catch (err) {
+      setActionError(err.response?.data?.detail || 'Failed to re-index documents');
+    } finally {
+      setReindexing(false);
+    }
+  };
+
   const handleExportCsv = async () => {
     setExporting(true);
     setActionError('');
@@ -151,6 +170,16 @@ export default function AdminPage() {
           </button>
 
           <button
+            className="btn-refresh"
+            onClick={handleReindex}
+            disabled={reindexing}
+            title="Trigger Re-indexing of all documents"
+          >
+            <Layers size={15} />
+            <span>{reindexing ? 'Re-indexing...' : 'Trigger Re-index'}</span>
+          </button>
+
+          <button
             className="btn-export-csv"
             onClick={handleExportCsv}
             disabled={exporting}
@@ -160,6 +189,13 @@ export default function AdminPage() {
           </button>
         </div>
       </div>
+
+      {reindexSuccess && (
+        <div className="alert-box success">
+          <CheckCircle size={16} />
+          <span>{reindexSuccess}</span>
+        </div>
+      )}
 
       {actionError && (
         <div className="alert-box error">

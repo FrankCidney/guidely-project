@@ -100,6 +100,11 @@ export const documentService = {
     const response = await api.delete(`/api/documents/${id}`);
     return response.data;
   },
+
+  async reindexDocuments() {
+    const response = await api.post('/api/documents/reindex');
+    return response.data;
+  },
 };
 
 // --- Search Services ---
