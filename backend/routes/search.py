@@ -37,7 +37,11 @@ def perform_search(
 
     # 1. Conversational Query Reformulation
     if request.history:
-        standalone_query = llm.reformulate_query(raw_query, request.history)
+        # If this exact query is already cached, reuse it directly to guarantee 100% repeat cache hits and reduce latency
+        if llm.get_cached_embedding(raw_query) is not None:
+            standalone_query = raw_query
+        else:
+            standalone_query = llm.reformulate_query(raw_query, request.history)
     else:
         standalone_query = raw_query
 
