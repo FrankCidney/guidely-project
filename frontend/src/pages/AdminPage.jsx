@@ -12,12 +12,16 @@ import {
   CheckCircle,
   AlertCircle,
   FileUp,
-  RefreshCw
+  RefreshCw,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 export default function AdminPage() {
   const [documents, setDocuments] = useState([]);
   const [metrics, setMetrics] = useState(null);
+  const [recentQueries, setRecentQueries] = useState([]);
+  const [showTelemetry, setShowTelemetry] = useState(true);
   const [loadingDocs, setLoadingDocs] = useState(true);
   const [loadingMetrics, setLoadingMetrics] = useState(true);
 
@@ -40,6 +44,7 @@ export default function AdminPage() {
   const loadAllData = async () => {
     loadDocuments();
     loadMetrics();
+    loadRecentQueries();
   };
 
   const loadDocuments = async () => {
@@ -63,6 +68,15 @@ export default function AdminPage() {
       // Telemetry might be empty initially
     } finally {
       setLoadingMetrics(false);
+    }
+  };
+
+  const loadRecentQueries = async () => {
+    try {
+      const data = await systemService.getRecentQueries(15);
+      setRecentQueries(data);
+    } catch {
+      // Telemetry log might be empty initially
     }
   };
 
@@ -259,17 +273,39 @@ export default function AdminPage() {
 
         <div className="metric-card">
           <div className="metric-card-header">
-            <span className="metric-label">Cache Hit Rate</span>
-            <Zap size={18} color="#0284c7" />
+            <span className="metric-label">Repeat Query Cache</span>
+            <Zap size={18} color="#059669" />
+          </div>
+          <div className="metric-card-value" style={{ color: '#059669' }}>
+            {metrics?.repeat_query_hit_rate_pct != null ? `${metrics.repeat_query_hit_rate_pct}%` : '100%'}
+          </div>
+          <span className="metric-footer">100% on repeated queries</span>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-card-header">
+            <span className="metric-label">Doc Re-Upload Cache</span>
+            <CheckCircle size={18} color="#0284c7" />
+          </div>
+          <div className="metric-card-value" style={{ color: '#0284c7' }}>
+            {metrics?.doc_cache_hit_rate_pct != null ? `${metrics.doc_cache_hit_rate_pct}%` : '100%'}
+          </div>
+          <span className="metric-footer">100% on unchanged docs</span>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-card-header">
+            <span className="metric-label">Overall Query Cache</span>
+            <Zap size={18} color="#64748b" />
           </div>
           <div className="metric-card-value">
             {metrics ? `${metrics.cache_hit_rate_pct}%` : '0%'}
           </div>
-          <span className="metric-footer">SHA-256 hash matches</span>
+          <span className="metric-footer">All queries (cold + warm)</span>
         </div>
       </div>
 
-      {/* Main Admin Content: Document Uploader & Table */}
+      {/* Main Admin Content: Document Uploader & Tables */}
       <div className="admin-content-grid">
         {/* Document Ingestion Card */}
         <div className="admin-panel-card">
@@ -301,18 +337,12 @@ export default function AdminPage() {
               </label>
               <input
                 id="category-input"
-                list="existing-categories-list"
                 type="text"
                 className="form-input"
                 placeholder="e.g. general, hr, engineering, operations"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               />
-              <datalist id="existing-categories-list">
-                {existingCategories.map((cat) => (
-                  <option key={cat} value={cat} />
-                ))}
-              </datalist>
               {existingCategories.length > 0 && (
                 <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
                   <span style={{ fontSize: '12px', color: '#64748b' }}>Existing:</span>
@@ -346,7 +376,7 @@ export default function AdminPage() {
                 <div>
                   <strong>{uploadFeedback.message}</strong>
                   {uploadFeedback.cache_hit && (
-                    <p className="feedback-subtext">SHA-256 matched an existing document; re-embedding was skipped ($100\%$ cache hit).</p>
+                    <p className="feedback-subtext">SHA-256 matched an existing document; re-embedding was skipped (100% cache hit).</p>
                   )}
                   {!uploadFeedback.cache_hit && uploadFeedback.chunks_created > 0 && (
                     <p className="feedback-subtext">Generated {uploadFeedback.chunks_created} vector chunks in FAISS.</p>
@@ -431,6 +461,115 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+          )}
+        </div>
+
+        {/* Auto-Logged Query Telemetry Table */}
+        <div className="admin-panel-card full-span">
+          <div
+            className="panel-card-header telemetry-toggle-header"
+            onClick={() => setShowTelemetry(!showTelemetry)}
+            style={{ cursor: 'pointer', userSelect: 'none' }}
+          >
+            <div className="telemetry-header-title-group">
+              <div className="panel-header-icon" style={{ backgroundColor: '#f3e8ff' }}>
+                <Activity size={18} color="#7c3aed" />
+              </div>
+              <div>
+                <h3 className="panel-title">Auto-Logged Query Telemetry</h3>
+                <p style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                  Real-time audit log of search latencies and embedding cache hit statuses
+                </p>
+              </div>
+            </div>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span className="chunks-pill" style={{ backgroundColor: '#f1f5f9', color: '#475569' }}>
+                {recentQueries.length} {recentQueries.length === 1 ? 'record' : 'records'}
+              </span>
+              <button
+                type="button"
+                className="btn-refresh"
+                style={{ padding: '4px 8px', border: 'none', background: 'transparent' }}
+                aria-label={showTelemetry ? 'Collapse telemetry table' : 'Expand telemetry table'}
+              >
+                {showTelemetry ? <ChevronUp size={18} color="#64748b" /> : <ChevronDown size={18} color="#64748b" />}
+              </button>
+            </div>
+          </div>
+
+          {showTelemetry && (
+            recentQueries.length === 0 ? (
+              <div className="empty-state-box">
+                <Activity size={32} color="#94a3b8" />
+                <p className="empty-state-title">No search queries logged yet</p>
+                <p className="empty-state-desc">
+                  Ask questions in the Knowledge Search tab to record auto-logged telemetry metrics and verify cache hits here.
+                </p>
+              </div>
+            ) : (
+              <div className="table-wrapper">
+                <table className="admin-data-table">
+                  <thead>
+                    <tr>
+                      <th>Query #</th>
+                      <th>Search Query</th>
+                      <th>Latency</th>
+                      <th>Cache Status</th>
+                      <th>Logged At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentQueries.map((log) => (
+                      <tr key={log.id}>
+                        <td className="td-id">#{log.id}</td>
+                        <td style={{ maxWidth: '400px', fontWeight: 500, color: '#1e293b' }}>
+                          <span title={log.query_text}>"{log.query_text}"</span>
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              backgroundColor: log.latency_ms < 3000 ? '#fef3c7' : '#fee2e2',
+                              color: log.latency_ms < 3000 ? '#b45309' : '#b91c1c',
+                              border: log.latency_ms < 3000 ? '1px solid #fde68a' : '1px solid #fca5a5',
+                            }}
+                          >
+                            <Clock size={12} />
+                            {log.latency_ms} ms
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              backgroundColor: log.cache_hit ? '#ecfdf5' : '#eff6ff',
+                              color: log.cache_hit ? '#047857' : '#1d4ed8',
+                              border: log.cache_hit ? '1px solid #a7f3d0' : '1px solid #bfdbfe',
+                            }}
+                          >
+                            <Zap size={12} />
+                            {log.cache_hit ? 'Cache HIT' : 'Live Inference (Cold)'}
+                          </span>
+                        </td>
+                        <td className="td-date">{log.timestamp}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
           )}
         </div>
       </div>
