@@ -38,10 +38,12 @@ export default function SearchPage() {
     loadCategories();
   }, []);
 
-  // Scroll to bottom of chat when new message is added
+  // Scroll to top when a new query finishes loading
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [history, loading]);
+    if (!loading && history.length > 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [loading, history.length]);
 
   const handleSearch = async (e, customQuery = null) => {
     if (e) e.preventDefault();
@@ -51,8 +53,8 @@ export default function SearchPage() {
     setError('');
     setLoading(true);
 
-    // Build chat history payload for follow-up query reformulation
-    const historyPayload = history.flatMap(item => [
+    // Build chat history payload in chronological order (oldest to newest) for backend reformulation
+    const historyPayload = [...history].reverse().flatMap(item => [
       { role: 'user', content: item.query },
       { role: 'assistant', content: item.answer }
     ]);
@@ -65,7 +67,6 @@ export default function SearchPage() {
       );
 
       setHistory(prev => [
-        ...prev,
         {
           id: Date.now(),
           query: result.query,
@@ -74,7 +75,8 @@ export default function SearchPage() {
           sources: result.sources || [],
           metrics: result.metrics || null,
           category_filter: categoryFilter || null,
-        }
+        },
+        ...prev
       ]);
       setQuery('');
     } catch (err) {
@@ -149,7 +151,7 @@ export default function SearchPage() {
         </form>
 
         {/* Starter Suggestion Pills (Shown when no chat history) */}
-        {history.length === 0 && (
+        {history.length === 0 && !loading && (
           <div className="suggested-queries-section">
             <span className="suggested-label">
               <Sparkles size={14} color="#2563eb" />
@@ -180,11 +182,22 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Conversation Thread / Results List */}
+      {/* Conversation Thread / Results List (Newest on Top) */}
       <div className="search-results-thread">
+        {/* Loading Indicator for In-Flight Search placed at Top */}
+        {loading && (
+          <div className="search-loading-card">
+            <div className="loading-spinner-ring" />
+            <div className="loading-text-group">
+              <p className="loading-title">Retrieving context & generating answer...</p>
+              <p className="loading-subtitle">Querying FAISS vector index & synthesizing with Gemini</p>
+            </div>
+          </div>
+        )}
+
         {history.length > 0 && (
           <div className="thread-actions-bar">
-            <span className="thread-count">{history.length} {history.length === 1 ? 'Query' : 'Queries'} in thread</span>
+            <span className="thread-count">{history.length} {history.length === 1 ? 'Query' : 'Queries'} in thread (Newest first)</span>
             <button className="btn-clear-thread" onClick={handleClearHistory}>
               <Trash2 size={14} />
               <span>Clear History</span>
@@ -238,19 +251,6 @@ export default function SearchPage() {
             </div>
           </div>
         ))}
-
-        {/* Loading Indicator for In-Flight Search */}
-        {loading && (
-          <div className="search-loading-card">
-            <div className="loading-spinner-ring" />
-            <div className="loading-text-group">
-              <p className="loading-title">Retrieving context & generating answer...</p>
-              <p className="loading-subtitle">Querying FAISS vector index & synthesizing with Gemini</p>
-            </div>
-          </div>
-        )}
-
-        <div ref={chatEndRef} />
       </div>
     </div>
   );
