@@ -45,9 +45,15 @@ def perform_search(
     try:
         query_vector, cache_hit = llm.get_query_embedding(standalone_query)
     except Exception as e:
+        err_str = str(e)
+        if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Google Gemini API Quota Exceeded (429): Embedding rate limit reached. Please wait a moment or use another API key."
+            )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate query embedding: {str(e)}"
+            detail=f"Failed to generate query embedding: {err_str}"
         )
 
     # 3. Vector Similarity Search (Top-k=3)
@@ -112,7 +118,19 @@ def perform_search(
             ]
 
     # 5. Answer Generation via Gemini with strict grounding
-    answer = llm.generate_answer(standalone_query, context_chunks)
+    try:
+        answer = llm.generate_answer(standalone_query, context_chunks)
+    except Exception as e:
+        err_str = str(e)
+        if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Google Gemini API Quota Exceeded (429): Rate limit reached for the active model. Please wait a moment, change GEMINI_LLM_MODEL in .env, or use another API key."
+            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate answer: {err_str}"
+        )
 
     # 6. Telemetry Logging & Performance Metrics
     end_time = time.perf_counter()

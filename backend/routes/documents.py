@@ -89,9 +89,21 @@ async def upload_document(
             detail="Document resulted in zero chunks"
         )
 
-    # 4. Generate embeddings via Gemini text-embedding-004
+    # 4. Generate embeddings via Gemini embedding model
     llm = get_llm_service()
-    embeddings = llm.generate_embeddings(chunks)
+    try:
+        embeddings = llm.generate_embeddings(chunks)
+    except Exception as e:
+        err_str = str(e)
+        if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Google Gemini API Quota Exceeded (429): Embedding rate limit reached during document ingestion. Please wait a moment or use another API key."
+            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate document embeddings: {err_str}"
+        )
 
     # 5. Add embeddings to FAISS vector index
     vstore = get_vector_store()

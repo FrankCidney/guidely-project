@@ -4,8 +4,10 @@ from dotenv import load_dotenv
 # Load variables from root .env file
 load_dotenv()
 
-# Core AI Credentials
+# Core AI Credentials & Models
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_LLM_MODEL = os.getenv("GEMINI_LLM_MODEL", "gemini-3.5-flash")
+GEMINI_EMBEDDING_MODEL = os.getenv("GEMINI_EMBEDDING_MODEL", "gemini-embedding-001")
 
 # Security & JWT Configuration
 JWT_SECRET = os.getenv("JWT_SECRET", "guidely-super-secret-production-key-change-this-32-chars")

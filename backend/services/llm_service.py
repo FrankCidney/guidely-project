@@ -4,16 +4,16 @@ import hashlib
 from typing import List, Dict, Any, Optional, Union, Tuple
 from google import genai
 from google.genai import types
-from backend.config import GEMINI_API_KEY
+from backend.config import GEMINI_API_KEY, GEMINI_LLM_MODEL, GEMINI_EMBEDDING_MODEL
 from backend.database import get_db
 
 
 class GeminiService:
     """
     Handles all interactions with Google Gemini AI models:
-      1. Generating 768-dimensional text embeddings using `text-embedding-004`.
-      2. Reformulating conversational follow-up questions using `gemini-1.5-flash`.
-      3. Generating strictly grounded Q&A answers with source citations using `gemini-1.5-flash`.
+      1. Generating 768-dimensional text embeddings using GEMINI_EMBEDDING_MODEL.
+      2. Reformulating conversational follow-up questions using GEMINI_LLM_MODEL.
+      3. Generating strictly grounded Q&A answers with source citations using GEMINI_LLM_MODEL.
       4. Persistent SQLite caching of query vector embeddings for 100% cache hit performance.
     """
 
@@ -29,8 +29,8 @@ class GeminiService:
             )
 
         self.client = genai.Client(api_key=key)
-        self.embedding_model = "gemini-embedding-001"
-        self.llm_model = "gemini-3.6-flash"
+        self.embedding_model = GEMINI_EMBEDDING_MODEL
+        self.llm_model = GEMINI_LLM_MODEL
 
     def get_cached_embedding(self, text: str) -> Optional[List[float]]:
         """
