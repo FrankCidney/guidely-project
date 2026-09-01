@@ -20,9 +20,5 @@ frontend/dist/
 .vscode/
 .idea/
 
-# Execution Plan & Temp Notes
-PROJECT_EXECUTION_PLAN.md
-TEMP_GUIDE.md
-METRICS_NOTES.md
-AUDIT_MANUAL_VALIDATION_GUIDE.md
-*.tmp.md
+# Temp Notes
+temp-notes/*

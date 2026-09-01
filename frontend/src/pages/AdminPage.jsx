@@ -23,7 +23,7 @@ export default function AdminPage() {
 
   // Upload form state
   const [selectedFile, setSelectedFile] = useState(null);
-  const [category, setCategory] = useState('General');
+  const [category, setCategory] = useState('general');
   const [uploading, setUploading] = useState(false);
   const [uploadFeedback, setUploadFeedback] = useState(null);
 
@@ -81,8 +81,10 @@ export default function AdminPage() {
     setUploadFeedback(null);
     setActionError('');
 
+    const cleanCategory = category.replace(/\s+/g, ' ').trim().toLowerCase() || 'general';
+
     try {
-      const res = await documentService.uploadDocument(selectedFile, category.trim() || 'General');
+      const res = await documentService.uploadDocument(selectedFile, cleanCategory);
       setUploadFeedback({
         type: res.cache_hit ? 'info' : 'success',
         message: res.message,
@@ -90,6 +92,7 @@ export default function AdminPage() {
         chunks_created: res.chunks_created
       });
       setSelectedFile(null);
+      setCategory('general');
       // Reset input element
       const fileInput = document.getElementById('admin-file-input');
       if (fileInput) fileInput.value = '';
@@ -151,6 +154,10 @@ export default function AdminPage() {
       setExporting(false);
     }
   };
+
+  const existingCategories = Array.from(
+    new Set(['general', ...documents.map(d => (d.category || '').replace(/\s+/g, ' ').trim().toLowerCase()).filter(Boolean)])
+  ).sort();
 
   return (
     <div className="admin-page-container">
@@ -294,12 +301,43 @@ export default function AdminPage() {
               </label>
               <input
                 id="category-input"
+                list="existing-categories-list"
                 type="text"
                 className="form-input"
-                placeholder="e.g. HR, Engineering, Operations"
+                placeholder="e.g. general, hr, engineering, operations"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               />
+              <datalist id="existing-categories-list">
+                {existingCategories.map((cat) => (
+                  <option key={cat} value={cat} />
+                ))}
+              </datalist>
+              {existingCategories.length > 0 && (
+                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>Existing:</span>
+                  {existingCategories.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setCategory(cat)}
+                      style={{
+                        fontSize: '11px',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        border: category.trim().toLowerCase() === cat ? '1px solid #2563eb' : '1px solid #e2e8f0',
+                        backgroundColor: category.trim().toLowerCase() === cat ? '#eff6ff' : '#f8fafc',
+                        color: category.trim().toLowerCase() === cat ? '#1d4ed8' : '#475569',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                      title={`Select '${cat}'`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {uploadFeedback && (

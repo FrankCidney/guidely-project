@@ -79,11 +79,14 @@ def init_db():
             file_name TEXT UNIQUE NOT NULL,
             file_type TEXT NOT NULL,
             file_hash TEXT NOT NULL,
-            category TEXT DEFAULT 'General',
+            category TEXT DEFAULT 'general',
             uploaded_by INTEGER REFERENCES users(id),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         """)
+
+        # Clean existing category data to lowercase and trimmed
+        cursor.execute("UPDATE documents SET category = LOWER(TRIM(category)) WHERE category IS NOT NULL;")
 
         # 3. Document Chunks Table
         cursor.execute("""

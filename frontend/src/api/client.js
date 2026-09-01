@@ -83,10 +83,11 @@ export const documentService = {
     return response.data;
   },
 
-  async uploadDocument(file, category = 'General') {
+  async uploadDocument(file, category = 'general') {
+    const cleanCat = (category || '').replace(/\s+/g, ' ').trim().toLowerCase() || 'general';
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('category', category);
+    formData.append('category', cleanCat);
 
     const response = await api.post('/api/documents', formData, {
       headers: {
@@ -110,9 +111,10 @@ export const documentService = {
 // --- Search Services ---
 export const searchService = {
   async search(query, categoryFilter = null, history = []) {
+    const cleanFilter = categoryFilter ? categoryFilter.replace(/\s+/g, ' ').trim().toLowerCase() : null;
     const payload = {
       query,
-      category_filter: categoryFilter || null,
+      category_filter: cleanFilter || null,
       history,
     };
     const response = await api.post('/api/search', payload);

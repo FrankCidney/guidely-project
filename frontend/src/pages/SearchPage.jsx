@@ -14,7 +14,7 @@ const SUGGESTED_QUERIES = [
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
-  const [availableCategories, setAvailableCategories] = useState(['General']);
+  const [availableCategories, setAvailableCategories] = useState(['general']);
   const [history, setHistory] = useState([]); // List of { query, answer, standalone_query, sources, metrics, role }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -25,12 +25,14 @@ export default function SearchPage() {
     async function loadCategories() {
       try {
         const docs = await documentService.getDocuments();
-        const cats = Array.from(new Set(docs.map(d => d.category).filter(Boolean)));
+        const cats = Array.from(
+          new Set(['general', ...docs.map(d => (d.category || '').replace(/\s+/g, ' ').trim().toLowerCase()).filter(Boolean)])
+        ).sort();
         if (cats.length > 0) {
           setAvailableCategories(cats);
         }
       } catch {
-        // Fallback to default General
+        // Fallback to default general
       }
     }
     loadCategories();

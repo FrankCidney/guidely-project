@@ -18,7 +18,7 @@ class SearchQuery(BaseModel):
 class SourceCitation(BaseModel):
     """Schema representing a referenced chunk snippet in the answer."""
     file_name: str
-    category: Optional[str] = "General"
+    category: Optional[str] = "general"
     snippet: str
     similarity_score: float
 

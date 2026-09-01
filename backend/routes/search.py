@@ -3,7 +3,7 @@ from typing import Dict, Any, List
 from fastapi import APIRouter, HTTPException, status, Depends
 from backend.models.search import SearchQuery, SearchResponse, SourceCitation, SearchMetrics
 from backend.routes.auth import get_current_user
-from backend.routes.documents import get_vector_store, get_llm_service
+from backend.routes.documents import get_vector_store, get_llm_service, sanitize_category
 from backend.services.metrics_service import log_query
 from backend.database import get_db
 
@@ -89,9 +89,10 @@ def perform_search(
 
             # Map rows with their similarity score and apply optional category filter
             retrieved = []
+            clean_filter = sanitize_category(request.category_filter) if request.category_filter else None
             for r in rows:
-                category = r["category"] or "General"
-                if request.category_filter and category.lower() != request.category_filter.lower():
+                category = sanitize_category(r["category"])
+                if clean_filter and category != clean_filter:
                     continue
 
                 sim_score = float(score_map.get(r["vector_id"], 0.0))

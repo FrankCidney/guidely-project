@@ -30,10 +30,18 @@ def get_llm_service() -> GeminiService:
     return _llm_service
 
 
+def sanitize_category(category: Optional[str]) -> str:
+    """Cleans a category string by removing extra whitespace, lowercasing, or defaulting to 'general'."""
+    if not category:
+        return "general"
+    cleaned = " ".join(category.strip().split()).lower()
+    return cleaned if cleaned else "general"
+
+
 @router.post("", response_model=DocumentUploadResponse, status_code=status.HTTP_201_CREATED)
 async def upload_document(
     file: UploadFile = File(...),
-    category: str = Form("General"),
+    category: str = Form("general"),
     current_user: Dict[str, Any] = Depends(require_admin)
 ):
     """
@@ -41,6 +49,7 @@ async def upload_document(
     Uses SHA-256 hashing for cache detection: if unchanged, skips re-embedding.
     Requires Admin privileges.
     """
+    clean_category = sanitize_category(category)
     file_bytes = await file.read()
     if not file_bytes:
         raise HTTPException(
@@ -124,7 +133,7 @@ async def upload_document(
             INSERT INTO documents (file_name, file_type, file_hash, category, uploaded_by)
             VALUES (?, ?, ?, ?, ?)
             """,
-            (file_name, file_ext, file_hash, category, current_user["id"])
+            (file_name, file_ext, file_hash, clean_category, current_user["id"])
         )
         doc_id = cursor.lastrowid
 
@@ -168,7 +177,7 @@ def list_documents(current_user: Dict[str, Any] = Depends(get_current_user)):
         DocumentResponse(
             id=row["id"],
             file_name=row["file_name"],
-            category=row["category"] or "General",
+            category=sanitize_category(row["category"]),
             chunks=row["chunks"],
             created_at=str(row["created_at"])
         )
