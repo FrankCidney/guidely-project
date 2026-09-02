@@ -7,7 +7,7 @@ from backend.routes.auth import get_current_user, require_admin
 from backend.services.document_parser import compute_sha256, extract_text_from_bytes, chunk_text
 from backend.services.vector_store import FAISSManager
 from backend.services.llm_service import GeminiService
-from backend.database import get_db
+from backend.database import get_db, to_iso_utc
 
 router = APIRouter(prefix="/api/documents", tags=["Documents"])
 
@@ -179,7 +179,7 @@ def list_documents(current_user: Dict[str, Any] = Depends(get_current_user)):
             file_name=row["file_name"],
             category=sanitize_category(row["category"]),
             chunks=row["chunks"],
-            created_at=str(row["created_at"])
+            created_at=to_iso_utc(row["created_at"]) or ""
         )
         for row in rows
     ]

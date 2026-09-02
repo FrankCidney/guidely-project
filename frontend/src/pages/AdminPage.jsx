@@ -17,6 +17,22 @@ import {
   ChevronUp
 } from 'lucide-react';
 
+// Helper to format ISO-8601 UTC timestamp into user's local timezone
+function formatLocalDateTime(utcString) {
+  if (!utcString) return '-';
+  try {
+    let isoStr = String(utcString).trim();
+    if (!isoStr.endsWith('Z') && !isoStr.includes('+')) {
+      isoStr = isoStr.includes(' ') ? `${isoStr.replace(' ', 'T')}Z` : `${isoStr}Z`;
+    }
+    const date = new Date(isoStr);
+    if (isNaN(date.getTime())) return utcString;
+    return date.toLocaleString();
+  } catch {
+    return utcString;
+  }
+}
+
 export default function AdminPage() {
   const [documents, setDocuments] = useState([]);
   const [metrics, setMetrics] = useState(null);
@@ -445,7 +461,7 @@ export default function AdminPage() {
                       <td>
                         <span className="chunks-pill">{doc.chunks} chunks</span>
                       </td>
-                      <td className="td-date">{doc.created_at}</td>
+                      <td className="td-date">{formatLocalDateTime(doc.created_at)}</td>
                       <td className="td-actions">
                         <button
                           className="btn-delete-doc"
@@ -563,7 +579,7 @@ export default function AdminPage() {
                             {log.cache_hit ? 'Cache HIT' : 'Live Inference (Cold)'}
                           </span>
                         </td>
-                        <td className="td-date">{log.timestamp}</td>
+                        <td className="td-date">{formatLocalDateTime(log.timestamp)}</td>
                       </tr>
                     ))}
                   </tbody>

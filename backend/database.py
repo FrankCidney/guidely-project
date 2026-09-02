@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from typing import Optional, Any
 from pathlib import Path
 from contextlib import contextmanager
 
@@ -49,6 +50,27 @@ def get_db():
         conn.close()
 
 
+def to_iso_utc(val: Optional[Any]) -> Optional[str]:
+    """
+    Converts a timestamp (string, datetime, or None) to a standard ISO-8601 UTC string (YYYY-MM-DDTHH:MM:SSZ).
+    Handles naive SQLite strings (e.g. '2026-09-02 07:15:34') and already formatted strings.
+    """
+    if val is None:
+        return None
+    val_str = str(val).strip()
+    if not val_str:
+        return None
+    if val_str.endswith("Z"):
+        return val_str
+    if "+" in val_str:
+        return val_str
+    if " " in val_str:
+        return f"{val_str.replace(' ', 'T')}Z"
+    if "T" in val_str:
+        return f"{val_str}Z"
+    return val_str
+
+
 def init_db():
     """
     Initializes the SQLite database and creates the required tables if they do not exist.
@@ -68,7 +90,7 @@ def init_db():
             email TEXT UNIQUE NOT NULL,
             hashed_password TEXT NOT NULL,
             role TEXT NOT NULL CHECK (role IN ('reader', 'admin')),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
         );
         """)
 
@@ -81,7 +103,7 @@ def init_db():
             file_hash TEXT NOT NULL,
             category TEXT DEFAULT 'general',
             uploaded_by INTEGER REFERENCES users(id),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
         );
         """)
 
@@ -109,7 +131,7 @@ def init_db():
             sources_json TEXT NOT NULL,
             latency_ms INTEGER NOT NULL,
             cache_hit BOOLEAN NOT NULL,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            timestamp TIMESTAMP DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
         );
         """)
 
@@ -119,7 +141,7 @@ def init_db():
             text_hash TEXT PRIMARY KEY,
             query_text TEXT NOT NULL,
             embedding_json TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
         );
         """)
 

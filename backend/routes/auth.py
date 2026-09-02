@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from backend.models.auth import UserRegister, UserLogin, TokenResponse, UserOut
 from backend.services.auth_service import hash_password, verify_password, create_access_token, decode_access_token
-from backend.database import get_db
+from backend.database import get_db, to_iso_utc
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
 security = HTTPBearer(auto_error=False)
@@ -49,7 +49,7 @@ def get_current_user(
         "id": user["id"],
         "email": user["email"],
         "role": user["role"],
-        "created_at": str(user["created_at"]) if user["created_at"] else None
+        "created_at": to_iso_utc(user["created_at"])
     }
 
 
@@ -102,7 +102,7 @@ def register(user_data: UserRegister):
         id=created_user["id"],
         email=created_user["email"],
         role=created_user["role"],
-        created_at=str(created_user["created_at"]) if created_user["created_at"] else None
+        created_at=to_iso_utc(created_user["created_at"])
     )
 
 

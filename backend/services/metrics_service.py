@@ -167,7 +167,7 @@ def get_recent_query_logs(limit: int = 15) -> List[Dict[str, Any]]:
             "answer_text": row["answer_text"],
             "latency_ms": row["latency_ms"],
             "cache_hit": bool(row["cache_hit"]),
-            "timestamp": str(row["timestamp"])
+            "timestamp": to_iso_utc(row["timestamp"]) or ""
         }
         for row in rows
     ]
@@ -226,7 +226,7 @@ def generate_query_logs_csv() -> Generator[str, None, None]:
                     row["sources_json"],
                     row["latency_ms"],
                     "true" if row["cache_hit"] else "false",
-                    row["timestamp"]
+                    to_iso_utc(row["timestamp"]) or ""
                 ])
                 yield string_buffer.getvalue()
                 string_buffer.seek(0)
