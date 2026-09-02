@@ -3,7 +3,7 @@ import csv
 import json
 from typing import List, Dict, Any, Optional, Union, Generator
 import numpy as np
-from backend.database import get_db
+from backend.database import get_db, to_iso_utc
 
 
 def log_query(
