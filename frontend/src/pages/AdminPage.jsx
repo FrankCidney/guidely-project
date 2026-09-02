@@ -279,12 +279,14 @@ export default function AdminPage() {
         <div className="metric-card">
           <div className="metric-card-header">
             <span className="metric-label">Median Latency</span>
+            <span className="metric-label">Median Latency (Warm)</span>
             <Clock size={18} color="#d97706" />
           </div>
           <div className="metric-card-value">
             {metrics ? `${metrics.latency.median_ms} ms` : '0 ms'}
           </div>
           <span className="metric-footer">p95: {metrics ? `${metrics.latency.p95_ms} ms` : '0 ms'}</span>
+          <span className="metric-footer">p95: {metrics ? `${metrics.latency.p95_ms} ms` : '0 ms'} (cached)</span>
         </div>
 
         <div className="metric-card">

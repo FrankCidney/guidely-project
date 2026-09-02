@@ -103,11 +103,21 @@ def get_system_metrics() -> Dict[str, Any]:
 
     latencies = [row["latency_ms"] for row in rows]
     cache_hits = sum(1 for row in rows if bool(row["cache_hit"]))
+    cached_latencies = [row["latency_ms"] for row in rows if bool(row["cache_hit"])]
+    all_latencies = [row["latency_ms"] for row in rows]
+    cache_hits = len(cached_latencies)
 
     # Calculate percentiles using NumPy
     median_latency = float(np.median(latencies))
     p95_latency = float(np.percentile(latencies, 95))
     cache_hit_rate = float((cache_hits / len(rows)) * 100.0)
+    # Per audit spec ("Latency (local dev, warm cache) - Target: median < 3s with cached embeddings; p95 < 5s"),
+    # calculate response latency on queries with cached embeddings, falling back to all queries if none cached yet.
+    target_latencies = cached_latencies if cached_latencies else all_latencies
+
+    median_latency = float(np.median(target_latencies)) if target_latencies else 0.0
+    p95_latency = float(np.percentile(target_latencies, 95)) if target_latencies else 0.0
+    cache_hit_rate = float((cache_hits / len(rows)) * 100.0) if rows else 0.0
 
     seen_queries = set()
     repeat_query_count = 0
